@@ -28,7 +28,9 @@ class Node:
         self.matrix = []
         self.child = None
         self.parent = None
-        
+        self.level = 0
+        self.heuristic = 0
+        self.fval = 0
     def __init__(self, mat):
         self.matrix = mat
         self.child = None
@@ -45,11 +47,8 @@ class Node:
     def getChild(self, cur_node):
         if (cur_node.child!=None):
             return cur_node.child;
-        
-def findBlank(cur_node):
-    result = np.where(cur_node.matrix == 0)
-    pair = list(zip(result[0], result[1]))
-    return pair
+    
+#possible moves        
 def left(cur_node):
     row, col = findBlank(cur_node)[0]
     if (col > 0):
@@ -84,10 +83,36 @@ def up(cur_node):
         cur_node.addChild(newMat, cur_node)
         print(newMat)
 
+def findBlank(cur_node):
+    result = np.where(cur_node.matrix == 0)
+    pair = list(zip(result[0], result[1]))
+    return pair
 
 def uniformCost(problem):
     print("hello")
 
+def isGoal(cur_node, problem):
+    return (np.equal(cur_node.matrix, problem.goal_state))
+
+def missedTile(cur_node, problem):
+    missed = np.sum(cur_node.matrix != problem.goal_state)
+
+def euclidean(cur_node, problem):
+    result = np.where(cur_node.matrix != problem.goal_state)
+    pair = list(zip(result[0], result[1]))
+    dist = 0
+    for element in pair:
+        row = element[0]
+        col = element[1]
+        correct = np.where(cur_node.matrix[row][col] == problem.goal_state)
+        correct_pair = list(zip(correct[0], correct[1]))
+        correct_row = correct_pair[0][0]
+        correct_col = correct_pair[0][1]        
+        dist += abs(row - correct_row) + abs(col - correct_col)
+    return dist
+
+def buildTree(cur_node, algorithm):
+    
 
 def printMatrix(matrix):
     for i in range(3): 
@@ -95,20 +120,13 @@ def printMatrix(matrix):
             print(matrix[i][j], end=" ")
         print("\n")
 
-def missedTile(cur_node, problem):
-    missed = np.sum(cur_node.matrix != problem.goal_stat
-
 def main():
     print("Welcome to 862093078 8 puzzle solver.\n")
     puzzle = Problem()
     puzzle.setInitial()
-    mat = puzzle.getInitial()
-    first_node = Node(mat)
-    algorithm=input("\nEnter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Eucledian distance heuristic.\n")    
-    # node = Node(initial)
-    printMatrix(puzzle.getInitial())
-    printMatrix(puzzle.goal_state)
-    missedTile(first_node, puzzle)
-    #up(first_node)
+    first_node = Node(puzzle.getInitial())    
+    algorithm = input("\nEnter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Eucledian distance heuristic.\n")    
+    buildTree(first_node, algorithm)
+    
 if __name__=="__main__":
     main()
