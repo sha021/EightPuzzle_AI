@@ -1,3 +1,55 @@
 Welcome to 862093078 8 puzzle solver.
 
-Type "1" to use a default puzzle, or "2" to enter your own puzzle.
+Type "1" to use a default puzzle, or "2" to enter your own puzzle. 1
+
+Enter your choice of algorithm
+Uniform Cost Search
+A* with the Misplaced Tile heuristic.
+A* with the Eucledian distance heuristic.
+3
+expanding...
+The best state to expand with g(n) = 0  and h(n) = 0 is ...
+1 0 3 
+4 2 6 
+7 5 8 
+ 
+expanding...
+The best state to expand with g(n) = 1  and h(n) = 3.414213562373095 is ...
+1 2 3 
+4 0 6 
+7 5 8 
+ 
+expanding...
+The best state to expand with g(n) = 2  and h(n) = 2.0 is ...
+1 2 3 
+4 5 6 
+7 0 8 
+ 
+YOU REACHED TO THE GOAL!!!
+1 2 3 
+4 5 6 
+7 8 0 
+-----------------------------------------------------------------------------
+TRACK OF THE BEST POSSIBLE MOVES
+The best state to expand with g(n) = 0  and h(n) = 0 is ...
+1 0 3 
+4 2 6 
+7 5 8 
+The best state to expand with g(n) = 1  and h(n) = 3.414213562373095 is ...
+1 2 3 
+4 0 6 
+7 5 8 
+The best state to expand with g(n) = 2  and h(n) = 2.0 is ...
+1 2 3 
+4 5 6 
+7 0 8 
+THE PUZZLE IS SOLVED WITH BEST POSSIBLE MOVES
+1 2 3 
+4 5 6 
+7 8 0 
+-----------------------------------------------------------------------------
+1 th goal is found with expanding 4 nodes
+To solve this problem the search algorithm expanded a total of 9 nodes
+The maximum number of nodes in the queue at any one time: 6
+-----------------------------------------------------------------------------
+Execution of solving the puzzle took 0.0051610469818115234 seconds

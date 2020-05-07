@@ -3,10 +3,20 @@ import heapq
 from queue import PriorityQueue
 from collections import deque 
 import sys
+import math
+import time
 
 frontier = PriorityQueue()
 visited = np.array([])
 count = 0
+check = set()
+# Trivial = np.array([[1,2,3],[4,5,6],[7,8,0]])
+# VeryEasy = np.array([[1,2,3],[4,5,6],[7,0,8]])
+# Easy = np.array([[1,2,0],[4,5,3],[7,8,6]])
+# Doable = np.array([[0,1,2],[4,5,3],[7,8,6]])
+# OhBoy =  np.array([[8,7,1],[6,0,2],[5,4,3]])
+# Impossible = np.array([[1,2,3],[4,5,6],[8,7,0]])
+# THE PROBLEM = np.array([[1,0,3],[4,2,6],[7,5,8]])
 
 class Problem:
     initial_state = []
@@ -18,7 +28,7 @@ class Problem:
     def setInitial(self):
         startInput=input("Type \"1\" to use a default puzzle, or \"2\" to enter your own puzzle.")
         if startInput=="1":
-            self.initial_state = np.array([[1,2,3],[4,8,0],[7,6,5]])
+            self.initial_state = np.array([[1,0,3],[4,2,6],[7,5,8]])
         else :
             print("Enter your puzzle, use a zero to represent the blank")
             row=input("Enter the first row, use space or tabs between numbers : ")
@@ -74,72 +84,86 @@ class Node:
     def updateFval(self):
         self.fval = self.gval + self.hval
 #possible moves        
-def left(cur_node, algorithm):
+def left(cur_node, algorithm, row, col):
     row, col = findBlank(cur_node)[0]
     if (col > 0):
         newMat = cur_node.matrix.copy()
         newMat[row, col] = newMat[row, col-1]
         newMat[row, col-1] = 0
-        cur_node.addChild(newMat, cur_node)
-        child = cur_node.child
-        child.gval = cur_node.gval + 1
-        child.updateHval(algorithm)
-        child.updateFval()
-        frontier.put(child, child.fval)
-        return child
+        exists = False
+        strMat = np.array2string(newMat)
+        if strMat in check:
+            exists = True
+        else:
+            cur_node.addChild(newMat, cur_node)
+            child = cur_node.child
+            child.gval = cur_node.gval + 1
+            child.updateHval(algorithm)
+            child.updateFval()
+            frontier.put(child, child.fval)
+            return child
         
-        #siblings.append(cur_node.getChild())
-
-def right(cur_node, algorithm):
+def right(cur_node, algorithm, row, col):
     row, col = findBlank(cur_node)[0]
     if (col < 2):
         newMat = cur_node.matrix.copy()
         newMat[row, col] = newMat[row, col+1]
         newMat[row, col+1] = 0
-        cur_node.addChild(newMat, cur_node)
-        child = cur_node.child
-        child.gval = cur_node.gval + 1
-        child.updateHval(algorithm)
-        child.updateFval()
-        frontier.put(child, child.fval)
-        return child
+        exists = False
+        strMat = np.array2string(newMat)
+        if strMat in check:
+            exists = True
+        else:
+            cur_node.addChild(newMat, cur_node)
+            child = cur_node.child
+            child.gval = cur_node.gval + 1
+            child.updateHval(algorithm)
+            child.updateFval()
+            frontier.put(child, child.fval)
+            return child
 
-def down(cur_node, algorithm):
+def down(cur_node, algorithm, row, col):
     row, col = findBlank(cur_node)[0]
     if (row < 2):
         newMat = cur_node.matrix.copy()
         newMat[row, col] = newMat[row+1, col]
         newMat[row+1, col] = 0
-        cur_node.addChild(newMat, cur_node)
-        child = cur_node.child
-        child.gval = cur_node.gval + 1
-        child.updateHval(algorithm)
-        child.updateFval()
-        frontier.put(child, child.fval)
-        return child
+        exists = False        
+        strMat = np.array2string(newMat)
+        if strMat in check:
+            exists = True
+        else:
+            cur_node.addChild(newMat, cur_node)
+            child = cur_node.child
+            child.gval = cur_node.gval + 1
+            child.updateHval(algorithm)
+            child.updateFval()
+            frontier.put(child, child.fval)
+            return child
         
-def up(cur_node, algorithm):
+def up(cur_node, algorithm, row, col):
     row, col = findBlank(cur_node)[0]
     if (row > 0):
         newMat = cur_node.matrix.copy()
         newMat[row, col] = newMat[row-1, col]
         newMat[row-1, col] = 0
-        cur_node.addChild(newMat, cur_node)
-        child = cur_node.child
-        child.gval = cur_node.gval + 1
-        child.updateHval(algorithm)
-        child.updateFval()
-        frontier.put(child, child.fval)
-        return child
-        
-
+        exists = False
+        strMat = np.array2string(newMat)
+        if strMat in check:
+            exists = True
+        else:
+            cur_node.addChild(newMat, cur_node)
+            child = cur_node.child
+            child.gval = cur_node.gval + 1
+            child.updateHval(algorithm)
+            child.updateFval()
+            frontier.put(child, child.fval)
+            return child
+            
 def findBlank(cur_node):
     result = np.where(cur_node.matrix == 0)
     pair = list(zip(result[0], result[1]))
     return pair
-
-def uniformCost(problem):
-    print("hello")
 
 def missedTiles(matrix, matrix_goal):
     missed = np.sum(matrix != matrix_goal)
@@ -156,7 +180,7 @@ def euclidean(matrix, matrix_goal):
         correct_pair = list(zip(correct[0], correct[1]))
         correct_row = correct_pair[0][0]
         correct_col = correct_pair[0][1]        
-        dist += abs(row - correct_row) + abs(col - correct_col)
+        dist += math.sqrt((row - correct_row)**2 + (col - correct_col)**2)
     return dist
 
 def buildTree(problem, algorithm):
@@ -168,80 +192,100 @@ def buildTree(problem, algorithm):
     found = False
     answer = []
     stack = deque()
-    
+    numNodes = []
     while(1):  
-        print("back to start")
         # break if nothing in frontier
         if (frontier.qsize() == 0): break;
-
         # track max frontier size
+ 
         if (not found and (frontier.qsize() > maxFrontier)):
             maxFrontier = frontier.qsize()
 
         #pop node from the frontier
-        visited = np.append(visited, frontier.get())
+        temp = frontier.get()
+        strMat = np.array2string(temp.matrix)
+        if strMat in check:
+            continue
+        check.add(strMat)
+        visited = np.append(visited, temp)
         cur_node = visited[-1]
 
         #if it passes the maxFval we found already, we skip to next on frontier
-        print(cur_node.fval)
-        print(maxFval)
-        if(maxFval < cur_node.fval):
-            print("goback")
+        if (maxFval < cur_node.fval):
             continue
-
+       
         #check if it's the goal state
         equal = np.array_equal(cur_node.matrix, problem.goal_state)
-       
         #heuristics
         if (algorithm != "1"):
             if (equal and maxFval > cur_node.fval):
+                print("YOU REACHED TO THE GOAL!!!")
+                printMatrix(visited[-1].matrix)
                 answer = cur_node
+                numNodes.append(visited.size)
                 found = True
                 maxFval = cur_node.fval
                 continue
             # only expand when no answer found
             elif ((not equal) and (maxFval > cur_node.fval)):
-                left(cur_node, algorithm)
-                right(cur_node, algorithm)
-                up(cur_node, algorithm)
-                down(cur_node, algorithm) 
+                print("expanding...")
+                print("The best state to expand with g(n) =", cur_node.gval, " and h(n) =", cur_node.hval, "is ...")
+                printMatrix(visited[-1].matrix)
+                print(" ")
+                row, col = findBlank(cur_node)[0]
+                left(cur_node, algorithm, row, col)
+                right(cur_node, algorithm, row, col)
+                up(cur_node, algorithm, row, col)
+                down(cur_node, algorithm, row, col) 
             else: continue
             
         else:
             if not(equal):
-                print("The best state to expand with g(n) =", cur_node.gval, " and h(n) =", cur_node.hval, "is ...")
+                print("expanding.... g(n) =", cur_node.gval, " and h(n) =", cur_node.hval)
                 printMatrix(visited[-1].matrix)
+                row, col = findBlank(cur_node)[0]
+                left(cur_node, algorithm, row, col)
+                right(cur_node, algorithm, row, col)
+                up(cur_node, algorithm, row, col)
+                down(cur_node, algorithm, row, col) 
                 print(" ")
             else:
-                break
-            l = left(cur_node, algorithm)
-            r = right(cur_node, algorithm)
-            u = up(cur_node, algorithm)
-            d = down(cur_node, algorithm)
-
-            if (l != None and np.array_equal(l.matrix, problem.goal_state)):
-                break
-            if (r != None and np.array_equal(r.matrix, problem.goal_state)):
-                break
-            if (u != None and np.array_equal(u.matrix, problem.goal_state)):
-                break
-            if (d != None and np.array_equal(d.matrix, problem.goal_state)):
+                print("YOU REACHED TO THE GOAL!!!")
+                printMatrix(visited[-1].matrix)
+                numNodes.append(visited.size)
+                answer = cur_node
+                maxFval = cur_node.fval
+                break   
+   
+    cur = answer
+    if (visited.size > 1):
+        while cur is not None:
+            stack.append(cur)
+            if (cur.parent != None): 
+                cur = cur.parent
+            else:
                 break
     
-    cur = answer
-    while cur is not None:
-        stack.append(cur)
-        cur = cur.parent
-
+    print("-----------------------------------------------------------------------------")
+    print("TRACK OF THE BEST POSSIBLE MOVES")
     while (len(stack) > 1):
         a = stack.pop()
         print("The best state to expand with g(n) =", a.gval, " and h(n) =", a.hval, "is ...")
         printMatrix(a.matrix)
-        print(" ")
-    print("stack size is", len(stack))
-    print("YOU REACHED TO THE GOAL!!!")
+    print("THE PUZZLE IS SOLVED WITH BEST POSSIBLE MOVES")
+    if (len(stack)>0):
+        a = stack.pop()
+        printMatrix(a.matrix)
+    print("-----------------------------------------------------------------------------")
+    i = 0
+    num = 0
+    for item in numNodes:
+        i += 1
+        print(i,"th goal is found with expanding {} nodes".format(item - num))
+        num = item
     print("To solve this problem the search algorithm expanded a total of {} nodes".format(visited.size) )
     print("The maximum number of nodes in the queue at any one time:", maxFrontier)
+    print("-----------------------------------------------------------------------------")
 
 def printMatrix(matrix):
     for i in range(3): 
@@ -249,18 +293,20 @@ def printMatrix(matrix):
             print(matrix[i][j], end=" ")
         print()
         
-
 def main():
     print("Welcome to 862093078 8 puzzle solver.\n")
     puzzle = Problem()
     puzzle.setInitial()
     first_node = Node(puzzle.getInitial())
-    first_node.setGoal(puzzle.goal_state)    
+    first_node.setGoal(puzzle.goal_state)
+    strMat = np.array2string(first_node.matrix)
     algorithm = input("\nEnter your choice of algorithm\nUniform Cost Search\nA* with the Misplaced Tile heuristic.\nA* with the Eucledian distance heuristic.\n")    
     #push the first node to the frontier
     #heapq.heappush(frontier, first_node)
     frontier.put(first_node, first_node.fval)
+    start_time = time.time()
     buildTree(puzzle, algorithm)
+    print("Execution of solving the puzzle took %s seconds" % (time.time() - start_time))
     
 if __name__=="__main__":
     main()
